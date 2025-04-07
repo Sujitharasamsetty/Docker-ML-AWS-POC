@@ -1,55 +1,22 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:us-east-1:441778934276:task-definition/myapi-task:1",
-    "containerDefinitions": [
-        {
-            "name": "myapi",
-            "image": "441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi:latest",
-            "cpu": 0,
-            "portMappings": [
-                {
-                    "containerPort": 4000,
-                    "hostPort": 4000,
-                    "protocol": "tcp"
-                }
-            ],
-            "essential": true,
-            "environment": [],
-            "mountPoints": [],
-            "volumesFrom": [],
-            "systemControls": []
-        }
-    ],
     "family": "myapi-task",
     "executionRoleArn": "arn:aws:iam::441778934276:role/ECS_Task_AI_POC",
     "networkMode": "awsvpc",
-    "revision": 1,
-    "volumes": [],
-    "status": "ACTIVE",
-    "requiresAttributes": [
-        {
-            "name": "com.amazonaws.ecs.capability.ecr-auth"
-        },
-        {
-            "name": "ecs.capability.execution-role-ecr-pull"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
-        },
-        {
-            "name": "ecs.capability.task-eni"
-        }
-    ],
-    "placementConstraints": [],
-    "compatibilities": [
-        "EC2",
-        "FARGATE"
-    ],
-    "requiresCompatibilities": [
-        "FARGATE"
-    ],
+    "requiresCompatibilities": ["FARGATE"],
     "cpu": "512",
     "memory": "1024",
-    "registeredAt": "2025-04-07T12:12:16.719Z",
-    "registeredBy": "arn:aws:iam::441778934276:user/sujitha_cli",
-    "tags": []
-}
+    "containerDefinitions": [
+      {
+        "name": "myapi",
+        "image": "441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi:latest",
+        "portMappings": [
+          {
+            "containerPort": 4000,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true
+      }
+    ]
+  }
+  
