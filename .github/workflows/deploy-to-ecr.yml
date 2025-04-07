@@ -1,9 +1,8 @@
-name: Deploy Docker Image to AWS ECR
+name: Deploy to ECS
 
 on:
   push:
-    branches:
-      - dev  # Or change to main if needed
+    branches: [dev]
 
 jobs:
   deploy:
@@ -21,11 +20,18 @@ jobs:
         aws-region: us-east-1
 
     - name: Login to Amazon ECR
-      id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push Docker image to ECR
+    - name: Build and push Docker image to ECR
       run: |
-        IMAGE_URI=441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi
+        IMAGE_URI=441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi:latest
         docker build -t $IMAGE_URI .
         docker push $IMAGE_URI
+
+    - name: Deploy to ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ecs-task-def.json
+        service: myapi-service
+        cluster: myapi-cluster
+        wait-for-service-stability: true
