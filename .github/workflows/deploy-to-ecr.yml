@@ -33,5 +33,5 @@ jobs:
       with:
         task-definition: ecs-task-def.json
         service: myapi-service
-        cluster: myapi-cluster
+        cluster: myapi-cluster1
         wait-for-service-stability: true
