@@ -1,14 +1,14 @@
 {
     "family": "myapi-task",
+    "executionRoleArn": "arn:aws:iam::441778934276:role/ECS_Task_AI_POC",
     "networkMode": "awsvpc",
     "requiresCompatibilities": ["FARGATE"],
     "cpu": "512",
     "memory": "1024",
-    "executionRoleArn": "arn:aws:iam::441778934276:role/ECS_Task_AI_POC",
     "containerDefinitions": [
       {
         "name": "myapi",
-        "image": "REPLACEME",  // Will be replaced by GitHub Actions
+        "image": "dummy",
         "portMappings": [
           {
             "containerPort": 4000,

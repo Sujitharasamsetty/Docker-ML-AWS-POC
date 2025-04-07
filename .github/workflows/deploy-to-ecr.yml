@@ -2,23 +2,14 @@ name: Deploy to ECS
 
 on:
   push:
-    branches:
-      - dev
-
-env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: myapi
-  ECS_CLUSTER: myapi-cluster1
-  ECS_SERVICE: api-ml-task
-  TASK_DEFINITION_FAMILY: myapi-task
-  CONTAINER_NAME: myapi
+    branches: [dev]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout source code
+    - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Configure AWS credentials
@@ -26,35 +17,30 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
-
-    - name: Create ECR repository (ignore error if exists)
-      run: |
-        aws ecr describe-repositories --repository-names $ECR_REPOSITORY || \
-        aws ecr create-repository --repository-name $ECR_REPOSITORY
+        aws-region: us-east-1
 
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Build, tag, and push Docker image
       run: |
-        IMAGE_URI="${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest"
+        IMAGE_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/myapi:latest"
         echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
         docker build -t $IMAGE_URI .
         docker push $IMAGE_URI
 
-    - name: Render ECS Task Definition
-      id: render
+    - name: Render ECS task definition
+      id: render-task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: ecs-task-def.json
-        container-name: ${{ env.CONTAINER_NAME }}
+        container-name: myapi
         image: ${{ env.IMAGE_URI }}
 
     - name: Deploy to Amazon ECS
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
-        task-definition: ${{ steps.render.outputs.task-definition }}
-        service: ${{ env.ECS_SERVICE }}
-        cluster: ${{ env.ECS_CLUSTER }}
+        task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+        service: api-ml-task
+        cluster: myapi-cluster1
         wait-for-service-stability: true
