@@ -2,7 +2,7 @@ name: Deploy to ECS
 
 on:
   push:
-    branches: [dev]
+    branches: [dev]  # Triggers only when code is pushed to 'dev' branch
 
 jobs:
   deploy:
@@ -22,16 +22,24 @@ jobs:
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build and push Docker image to ECR
+    - name: Build and push Docker image to Amazon ECR
       run: |
         IMAGE_URI=441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi:latest
         docker build -t $IMAGE_URI .
         docker push $IMAGE_URI
 
-    - name: Deploy to ECS
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+    - name: Render ECS task definition
+      id: render
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: ecs-task-def.json
+        container-name: myapi
+        image: 441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi:latest
+
+    - name: Deploy to Amazon ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.render.outputs.task-definition }}
         service: api-ml-task
         cluster: myapi-cluster1
         wait-for-service-stability: true
