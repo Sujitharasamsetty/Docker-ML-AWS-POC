@@ -1,8 +1,8 @@
-name: Deploy to ECS
+name: Full ECS Deployment
 
 on:
   push:
-    branches: [dev]  # Triggers only when code is pushed to 'dev' 
+    branches: [dev]
 
 jobs:
   deploy:
@@ -19,10 +19,15 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
+    - name: Ensure ECR Repository exists
+      run: |
+        aws ecr describe-repositories --repository-names myapi || \
+        aws ecr create-repository --repository-name myapi
+
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build and push Docker image to Amazon ECR
+    - name: Build and push Docker image
       run: |
         IMAGE_URI=441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi:latest
         docker build -t $IMAGE_URI .

@@ -8,7 +8,7 @@
     "containerDefinitions": [
       {
         "name": "myapi",
-        "image": "441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi:latest",
+        "image": "REPLACE_ME",
         "portMappings": [
           {
             "containerPort": 4000,
