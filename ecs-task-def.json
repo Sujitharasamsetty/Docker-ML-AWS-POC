@@ -1,5 +1,6 @@
 {
     "family": "myapi-task",
+    "executionRoleArn": "arn:aws:iam::441778934276:role/ECS_Task_AI_POC",
     "networkMode": "awsvpc",
     "requiresCompatibilities": ["FARGATE"],
     "cpu": "512",
