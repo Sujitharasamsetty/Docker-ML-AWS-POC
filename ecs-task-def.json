@@ -1,0 +1,21 @@
+{
+    "family": "myapi-task",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": ["FARGATE"],
+    "cpu": "512",
+    "memory": "1024",
+    "containerDefinitions": [
+      {
+        "name": "myapi",
+        "image": "441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi:latest",
+        "portMappings": [
+          {
+            "containerPort": 4000,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true
+      }
+    ]
+  }
+  
