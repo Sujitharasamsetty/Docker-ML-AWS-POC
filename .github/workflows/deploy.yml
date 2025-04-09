@@ -1,8 +1,8 @@
-name: Deploy to ECS
+name: Deploy to ECS with Infra
 
 on:
   push:
-    branches: [dev] # Trigger on push to dev branch
+    branches: [dev]  # Triggers on push to dev branch
 
 jobs:
   deploy:
@@ -19,6 +19,14 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
+    - name: Deploy CloudFormation stack (infra)
+      run: |
+        aws cloudformation deploy \
+          --template-file cloudformation.yaml \
+          --stack-name iris-fargate-stack \
+          --capabilities CAPABILITY_NAMED_IAM \
+          --parameter-overrides AppName=myapi
+
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v1
 
@@ -26,7 +34,7 @@ jobs:
       run: |
         IMAGE_URI="441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi:latest"
         echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
-        docker build -t $IMAGE_URI .  
+        docker build -t $IMAGE_URI .
         docker push $IMAGE_URI
 
     - name: Render ECS task definition

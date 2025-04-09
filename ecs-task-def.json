@@ -1,30 +1,21 @@
 {
-    "family": "myapi-task",
-    "executionRoleArn": "arn:aws:iam::441778934276:role/ECS_Task_AI_POC",
-    "networkMode": "awsvpc",
-    "requiresCompatibilities": ["FARGATE"],
-    "cpu": "512",
-    "memory": "1024",
-    "containerDefinitions": [
-      {
-        "name": "myapi",
-        "image": "dummy",
-        "portMappings": [
-          {
-            "containerPort": 4000,
-            "protocol": "tcp"
-          }
-        ],
-        "essential": true,
-        "logConfiguration": {
-          "logDriver": "awslogs",
-          "options": {
-            "awslogs-group": "/ecs/myapi",
-            "awslogs-region": "us-east-1",
-            "awslogs-stream-prefix": "ecs"
-          }
+  "family": "myapi",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::441778934276:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "myapi",
+      "image": "REPLACE_ME_LATER_IN_ACTION",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
         }
-      }
-    ]
-  }
-  
+      ]
+    }
+  ]
+}

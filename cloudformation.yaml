@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy FastAPI Docker App to ECS Fargate
+
+Parameters:
+  AppName:
+    Type: String
+    Default: iris-fastapi-app
+  ContainerPort:
+    Type: Number
+    Default: 8000
+
+Resources:
+
+  AppVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${AppName}-vpc"
+
+  AppSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref AppVPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select [ 0, !GetAZs "" ]
+      Tags:
+        - Key: Name
+          Value: !Sub "${AppName}-subnet"
+
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow inbound access
+      VpcId: !Ref AppVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref ContainerPort
+          ToPort: !Ref ContainerPort
+          CidrIp: 0.0.0.0/0
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref AppName
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AppName}-task-exec-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref AppName
+      Cpu: "256"
+      Memory: "512"
+      NetworkMode: awsvpc
+      RequiresCompatibilities: ["FARGATE"]
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: !Ref AppName
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${AppName}:latest"
+          PortMappings:
+            - ContainerPort: !Ref ContainerPort
+
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn: TaskDefinition
+    Properties:
+      Cluster: !Ref ECSCluster
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: [!Ref AppSubnet]
+          SecurityGroups: [!Ref AppSecurityGroup]
+          AssignPublicIp: ENABLED
+      TaskDefinition: !Ref TaskDefinition
+
+Outputs:
+  ServiceName:
+    Description: "ECS Service Name"
+    Value: !Ref ECSService
+  ClusterName:
+    Description: "ECS Cluster"
+    Value: !Ref ECSCluster
