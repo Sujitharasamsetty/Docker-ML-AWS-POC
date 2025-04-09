@@ -21,15 +21,6 @@ Resources:
         - Key: Name
           Value: !Sub "${AppName}-vpc"
 
-  InternetGateway:
-    Type: AWS::EC2::InternetGateway
-
-  AttachGateway:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      VpcId: !Ref AppVPC
-      InternetGatewayId: !Ref InternetGateway
-
   AppSubnet:
     Type: AWS::EC2::Subnet
     Properties:
@@ -40,25 +31,6 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AppName}-subnet"
-
-  RouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref AppVPC
-
-  Route:
-    Type: AWS::EC2::Route
-    DependsOn: AttachGateway
-    Properties:
-      RouteTableId: !Ref RouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref InternetGateway
-
-  SubnetRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref AppSubnet
-      RouteTableId: !Ref RouteTable
 
   AppSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -118,11 +90,13 @@ Resources:
           SecurityGroups: [!Ref AppSecurityGroup]
           AssignPublicIp: ENABLED
       TaskDefinition: !Ref TaskDefinition
+      ServiceName: iris-fastapi-service
 
 Outputs:
   ServiceName:
     Description: "ECS Service Name"
     Value: !Ref ECSService
+
   ClusterName:
     Description: "ECS Cluster"
     Value: !Ref ECSCluster

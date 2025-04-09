@@ -2,7 +2,7 @@ name: Deploy to ECS with Infra
 
 on:
   push:
-    branches: [dev]  # Triggers on push to dev branch
+    branches: [dev]
 
 jobs:
   deploy:
@@ -25,14 +25,14 @@ jobs:
           --template-file cloudformation.yaml \
           --stack-name iris-fargate-stack \
           --capabilities CAPABILITY_NAMED_IAM \
-          --parameter-overrides AppName=myapi
+          --parameter-overrides AppName=iris-fastapi-app
 
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Build, tag, and push Docker image
       run: |
-        IMAGE_URI="441778934276.dkr.ecr.us-east-1.amazonaws.com/myapi:latest"
+        IMAGE_URI="441778934276.dkr.ecr.us-east-1.amazonaws.com/iris-fastapi-app:latest"
         echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
         docker build -t $IMAGE_URI .
         docker push $IMAGE_URI
@@ -42,13 +42,13 @@ jobs:
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: ecs-task-def.json
-        container-name: myapi
+        container-name: iris-fastapi-app
         image: ${{ env.IMAGE_URI }}
 
     - name: Deploy to Amazon ECS
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
         task-definition: ${{ steps.render-task-def.outputs.task-definition }}
-        service: api-ml-task
-        cluster: myapi-cluster1
+        service: iris-fastapi-service
+        cluster: iris-fastapi-app
         wait-for-service-stability: true
