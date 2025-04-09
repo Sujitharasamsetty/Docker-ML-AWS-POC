@@ -21,28 +21,6 @@ Resources:
         - Key: Name
           Value: !Sub "${AppName}-vpc"
 
-  InternetGateway:
-    Type: AWS::EC2::InternetGateway
-
-  AttachGateway:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      VpcId: !Ref AppVPC
-      InternetGatewayId: !Ref InternetGateway
-
-  PublicRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref AppVPC
-
-  PublicRoute:
-    Type: AWS::EC2::Route
-    DependsOn: AttachGateway
-    Properties:
-      RouteTableId: !Ref PublicRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref InternetGateway
-
   AppSubnet:
     Type: AWS::EC2::Subnet
     Properties:
@@ -53,12 +31,6 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AppName}-subnet"
-
-  SubnetRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref AppSubnet
-      RouteTableId: !Ref PublicRouteTable
 
   AppSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -101,7 +73,7 @@ Resources:
       ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
       ContainerDefinitions:
         - Name: !Ref AppName
-          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${AppName}:latest"
+          Image: 441778934276.dkr.ecr.us-east-1.amazonaws.com/iris-fastapi-app:latest  # ✅ your actual image URI
           PortMappings:
             - ContainerPort: !Ref ContainerPort
 
@@ -127,11 +99,3 @@ Outputs:
   ClusterName:
     Description: "ECS Cluster"
     Value: !Ref ECSCluster
-
-  PublicSubnetId:
-    Description: "Public Subnet used by ECS"
-    Value: !Ref AppSubnet
-
-  VPCId:
-    Description: "VPC ID"
-    Value: !Ref AppVPC
